@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bảng Trạng Thái - Thợ Săn Nhi-chan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --neon-blue: #00f0ff;
+      --shadow-purple: #9d4edd;
+      --deep-dark: #04060c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: #000;
+      color: #e2e8f0;
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Khung dọc điện thoại */
+    .mobile-screen {
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px 20px;
+      background: radial-gradient(circle at 50% 15%, rgba(0, 240, 255, 0.08) 0%, rgba(4, 6, 12, 0.98) 100%);
+      overflow: hidden;
+    }
+
+    /* Canvas hiệu ứng sét */
+    #fxCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 25;
+    }
+
+    /* Rung lắc màn hình */
+    .screen-shake {
+      animation: shake 0.35s infinite;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0); }
+      20% { transform: translate(-4px, 3px); }
+      40% { transform: translate(4px, -3px) scale(1.015); }
+      60% { transform: translate(-3px, -4px); }
+      80% { transform: translate(3px, 4px); }
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+    .sys-badge {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--neon-blue);
+      text-shadow: 0 0 10px var(--neon-blue);
+    }
+
+    /* Bảng trạng thái */
+    .status-card {
+      background: rgba(10, 16, 32, 0.85);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 14px;
+      padding: 22px 18px;
+      position: relative;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 240, 255, 0.08);
+      z-index: 10;
+      transition: all 0.4s ease;
+    }
+
+    .status-card.glitched {
+      border-color: var(--shadow-purple);
+      box-shadow: 0 0 35px var(--shadow-purple);
+      opacity: 0.25;
+    }
+
+    .avatar-box {
+      text-align: center;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .avatar-glow {
+      width: 82px;
+      height: 82px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 2px solid var(--neon-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.25), rgba(4, 6, 12, 0.9));
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+      font-size: 34px;
+    }
+    .rank-tag {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ffd000, #ff7b00);
+      color: #000;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 12px;
+      padding: 3px 14px;
+      border-radius: 15px;
+      box-shadow: 0 0 12px rgba(255, 183, 3, 0.9);
+      letter-spacing: 1px;
+    }
+
+    .hunter-name {
+      text-align: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 25px;
+      color: #fff;
+      margin-top: 10px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 14px rgba(0, 240, 255, 0.7);
+    }
+    .hunter-title {
+      text-align: center;
+      font-size: 13px;
+      color: #7dd3fc;
+      margin-bottom: 16px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--neon-blue);
+      font-size: 14px;
+    }
+    .stat-val {
+      font-family: 'Orbitron', sans-serif;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    /* Màn hình sạc / gồng lực */
+    .charging-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle, rgba(141, 45, 226, 0.4) 0%, rgba(4,6,12,0.95) 100%);
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .charging-overlay.visible {
+      opacity: 1;
+    }
+
+    .charging-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      color: #ff2a5f;
+      letter-spacing: 2px;
+      text-shadow: 0 0 15px rgba(255,42,95,0.9);
+      margin-bottom: 18px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .progress-bar-container {
+      width: 75%;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 42, 95, 0.4);
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--shadow-purple), #ff2a5f, var(--neon-blue));
+      box-shadow: 0 0 15px #ff2a5f;
+    }
+
+    /* Nút kích hoạt */
+    .actions {
+      position: relative;
+      z-index: 15;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .btn-instruction {
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .btn-arise {
+      width: 100%;
+      height: 60px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0d1b2a, #1b263b);
+      border: 1.5px solid rgba(0, 240, 255, 0.4);
+      color: #00f0ff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      letter-spacing: 3px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    /* Lớp video full màn hình không viền */
+    .video-viewport {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-viewport.playing {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .video-viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: none;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Audio nhạc nền lúc nhấn giữ (Đặt file charge.mp3 cùng thư mục) -->
+  <audio id="chargeBgm" preload="auto">
+    <source src="charge.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="mobile-screen" id="mainScreen">
+    <canvas id="fxCanvas"></canvas>
+
+    <!-- Overlay gồng lực -->
+    <div class="charging-overlay" id="chargingOverlay">
+      <div class="charging-text">
+        ⚠ CẢNH BÁO: MA LỰC BÙNG NỔ ⚠<br>
+        <span style="font-size:12px; color:#a855f7;">ĐANG KẾT NỐI VỚI QUÂN VƯƠNG...</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+      <div class="sys-badge">◈ SHADOW MONARCH SYSTEM ◈</div>
+      <p style="font-size: 12px; color: #64748b; margin-top: 2px;">ĐỒNG BỘ VỚI QUÂN VƯƠNG HẮC ÁM</p>
+    </header>
+
+    <!-- Status Card Nhi-chan -->
+    <section class="status-card" id="statusCard">
+      <div class="avatar-box">
+        <div class="avatar-glow">👑</div>
+        <div class="rank-tag">CẤP S</div>
+      </div>
+
+      <h2 class="hunter-name">NHI-CHAN</h2>
+      <div class="hunter-title">Thợ Săn Tối Cao // Shadow Monarch Enthusiast</div>
+
+      <div class="stat-row">
+        <span>Cấp độ</span>
+        <span class="stat-val">LV. 100 [MAX]</span>
+      </div>
+      <div class="stat-row">
+        <span>Độ cuồng Sung Jinwoo</span>
+        <span class="stat-val">∞ VÔ HẠN</span>
+      </div>
+      <div class="stat-row">
+        <span>Quân đoàn bóng tối</span>
+        <span class="stat-val" id="shadowVal">130,000+ LÍNH</span>
+      </div>
+      <div class="stat-row">
+        <span>Trạng thái</span>
+        <span class="stat-val" id="stateVal" style="color: #4ade80;">SẴN SÀNG TRIỆU HỒI</span>
+      </div>
+    </section>
+
+    <!-- Nút Nhấn Giữ Thức Tỉnh -->
+    <div class="actions">
+      <div class="btn-instruction" id="btnHint">⚡ NHẤN GIỮ ĐỂ GIẢI PHÓNG SỨC MẠNH ⚡</div>
+      <button class="btn-arise" id="btnArise"
+              onmousedown="startCharging(event)" 
+              onmouseup="stopCharging(event)" 
+              onmouseleave="stopCharging(event)"
+              ontouchstart="startCharging(event)" 
+              ontouchend="stopCharging(event)">
+        ARISE // THỨC TỈNH
+      </button>
+    </div>
+
+    <!-- Vùng chiếu Video full không viền -->
+    <div class="video-viewport" id="videoViewport">
+      <video id="jinwooVideo" playsinline preload="auto">
+        <source src="jinwoo.mp4" type="video/mp4">
+      </video>
+    </div>
+
+  </div>
+
+  <script>
+    const canvas = document.getElementById('fxCanvas');
+    const ctx = canvas.getContext('2d');
+    const screen = document.getElementById('mainScreen');
+    const chargingOverlay = document.getElementById('chargingOverlay');
+    const progressFill = document.getElementById('progressFill');
+    const statusCard = document.getElementById('statusCard');
+    const btnArise = document.getElementById('btnArise');
+    const btnHint = document.getElementById('btnHint');
+    const videoViewport = document.getElementById('videoViewport');
+    const jinwooVideo = document.getElementById('jinwooVideo');
+    const chargeBgm = document.getElementById('chargeBgm');
+    const stateVal = document.getElementById('stateVal');
+
+    let chargeInterval = null;
+    let chargeProgress = 0;
+
+    function resizeCanvas() {
+      canvas.width = screen.clientWidth;
+      canvas.height = screen.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Vẽ hiệu ứng tia sét
+    function drawBolt(x1, y1, x2, y2, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.shadowBlur = 14;
+      ctx.shadowColor = color;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+
+      let curX = x1, curY = y1;
+      const steps = 6;
+      for (let i = 0; i < steps; i++) {
+        curX += (x2 - x1) / steps + (Math.random() - 0.5) * 45;
+        curY += (y2 - y1) / steps;
+        ctx.lineTo(curX, curY);
+      }
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function triggerLightning() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const intensity = chargeProgress / 12;
+      for (let i = 0; i < intensity; i++) {
+        const x = Math.random() * canvas.width;
+        const color = Math.random() > 0.5 ? '#00f0ff' : '#a855f7';
+        drawBolt(x, canvas.height, x + (Math.random() - 0.5) * 120, Math.random() * canvas.height * 0.45, color);
+      }
+    }
+
+    // 1. BẮT ĐẦU NHẤN GIỮ (PHÁT NHẠC NỀN & SẠC NĂNG LƯỢNG)
+    function startCharging(e) {
+      if (e) e.preventDefault();
+      
+      // Phát nhạc nền lúc gồng
+      chargeBgm.currentTime = 0;
+      chargeBgm.play().catch(() => {});
+
+      chargeProgress = 0;
+      chargingOverlay.classList.add('visible');
+      statusCard.classList.add('glitched');
+      screen.classList.add('screen-shake');
+      
+      btnArise.style.background = 'linear-gradient(135deg, #7928ca, #ff2a5f)';
+      btnArise.innerText = '⚡ ĐANG GIẢI PHÓNG... ⚡';
+
+      chargeInterval = setInterval(() => {
+        chargeProgress += 2; // Tốc độ sạc (mất tầm ~2.5s để đầy 100%)
+        progressFill.style.width = chargeProgress + '%';
+
+        if (navigator.vibrate && Math.random() > 0.6) navigator.vibrate(35);
+        triggerLightning();
+
+        if (chargeProgress >= 100) {
+          launchCinematicVideo();
+        }
+      }, 50);
+    }
+
+    // 2. BUÔNG TAY SỚM (TẮT NHẠC & RESET)
+    function stopCharging(e) {
+      if (e) e.preventDefault();
+      clearInterval(chargeInterval);
+
+      if (chargeProgress < 100) {
+        // Tắt và reset nhạc nền
+        chargeBgm.pause();
+        chargeBgm.currentTime = 0;
+
+        chargeProgress = 0;
+        chargingOverlay.classList.remove('visible');
+        statusCard.classList.remove('glitched');
+        screen.classList.remove('screen-shake');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        btnArise.style.background = 'linear-gradient(135deg, #0d1b2a, #1b263b)';
+        btnArise.innerText = 'ARISE // THỨC TỈNH';
+      }
+    }
+
+    // 3. ĐỦ 100% -> TẮT NHẠC GỒNG VÀ PHÁT VIDEO CHÍNH
+    function launchCinematicVideo() {
+      clearInterval(chargeInterval);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      screen.classList.remove('screen-shake');
+      chargingOverlay.classList.remove('visible');
+
+      // Tắt nhạc nền để nhường tiếng cho video
+      chargeBgm.pause();
+      chargeBgm.currentTime = 0;
+
+      // Kích hoạt video
+      videoViewport.classList.add('playing');
+      jinwooVideo.currentTime = 0;
+      jinwooVideo.muted = false; // Bật âm thanh video
+      jinwooVideo.play().catch(() => {
+        jinwooVideo.muted = true; // Fallback nếu trình duyệt khắt khe autoplay
+        jinwooVideo.play();
+      });
+
+      if (navigator.vibrate) navigator.vibrate([150, 60, 300]);
+    }
+
+    // 4. KHI VIDEO CHIẾU HẾT -> TRỞ VỀ GIAO DIỆN CHÚA TỂ
+    jinwooVideo.onended = () => {
+      videoViewport.classList.remove('playing');
+      statusCard.classList.remove('glitched');
+
+      btnArise.style.background = 'linear-gradient(135deg, #4a00e0, #8e2de2)';
+      btnArise.innerText = '✦ QUÂN ĐOÀN ĐÃ THỨC TỈNH ✦';
+      btnHint.innerText = '✦ NHI-CHAN CHÍNH THỨC TRỞ THÀNH CHÚA TỂ BÓNG TỐI ✦';
+      btnHint.style.color = '#c084fc';
+      stateVal.innerText = 'CHÚA TỂ BÓNG TỐI';
+      stateVal.style.color = '#c084fc';
+    };
+  </script>
+</body>
+</html>
