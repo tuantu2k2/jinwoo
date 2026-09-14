@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Bảng Trạng Thái - Thợ Săn Nhi-chan</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -34,7 +34,6 @@
       overflow: hidden;
     }
 
-    /* Khung dọc điện thoại tối ưu chiều cao dynamic viewport */
     .mobile-screen {
       width: 100%;
       max-width: 430px;
@@ -44,12 +43,11 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 24px 20px calc(35px + env(safe-area-inset-bottom, 0px)) 20px;
+      padding: 24px 20px calc(16px + env(safe-area-inset-bottom, 0px)) 20px;
       background: radial-gradient(circle at 50% 15%, rgba(0, 240, 255, 0.08) 0%, rgba(4, 6, 12, 0.98) 100%);
       overflow: hidden;
     }
 
-    /* Canvas hiệu ứng sét */
     #fxCanvas {
       position: absolute;
       top: 0;
@@ -60,7 +58,6 @@
       z-index: 25;
     }
 
-    /* Rung lắc màn hình */
     .screen-shake {
       animation: shake 0.35s infinite;
     }
@@ -72,7 +69,6 @@
       80% { transform: translate(3px, 4px); }
     }
 
-    /* Header */
     .header {
       text-align: center;
       position: relative;
@@ -87,7 +83,6 @@
       text-shadow: 0 0 10px var(--neon-blue);
     }
 
-    /* Bảng trạng thái */
     .status-card {
       background: rgba(10, 16, 32, 0.85);
       border: 1px solid rgba(0, 240, 255, 0.35);
@@ -215,7 +210,7 @@
       box-shadow: 0 0 15px #ff2a5f;
     }
 
-    /* Nút kích hoạt - Thêm khoảng đệm an toàn với thanh điều hướng */
+    /* Cụm Action */
     .actions {
       position: relative;
       z-index: 15;
@@ -231,7 +226,10 @@
       margin-bottom: 10px;
       letter-spacing: 1px;
       text-transform: uppercase;
+      transition: color 0.3s ease;
     }
+
+    /* Nút Thức Tỉnh & Trạng thái Loading */
     .btn-arise {
       width: 100%;
       height: 58px;
@@ -250,6 +248,16 @@
       align-items: center;
       justify-content: center;
       transition: all 0.3s ease;
+    }
+
+    /* Khi đang load dữ liệu (chưa sẵn sàng) */
+    .btn-arise:disabled {
+      background: #090d16;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #475569;
+      box-shadow: none;
+      cursor: not-allowed;
+      opacity: 0.7;
     }
 
     /* Lớp video full màn hình không viền */
@@ -283,15 +291,14 @@
 </head>
 <body>
 
-  <!-- Audio nhạc nền lúc nhấn giữ (đặt cùng thư mục) -->
+  <!-- Audio preload='auto' -->
   <audio id="chargeBgm" preload="auto">
-    <source src="charge.mp3" type="audio/mpeg">
+    <source src="./charge.MP3" type="audio/mpeg">
   </audio>
 
   <div class="mobile-screen" id="mainScreen">
     <canvas id="fxCanvas"></canvas>
 
-    <!-- Overlay gồng lực -->
     <div class="charging-overlay" id="chargingOverlay">
       <div class="charging-text">
         ⚠ CẢNH BÁO: MA LỰC BÙNG NỔ ⚠<br>
@@ -302,13 +309,11 @@
       </div>
     </div>
 
-    <!-- Header -->
     <header class="header">
       <div class="sys-badge">◈ SHADOW MONARCH SYSTEM ◈</div>
       <p style="font-size: 12px; color: #64748b; margin-top: 2px;">ĐỒNG BỘ VỚI QUÂN VƯƠNG HẮC ÁM</p>
     </header>
 
-    <!-- Status Card Nhi-chan -->
     <section class="status-card" id="statusCard">
       <div class="avatar-box">
         <div class="avatar-glow">👑</div>
@@ -332,27 +337,27 @@
       </div>
       <div class="stat-row">
         <span>Trạng thái</span>
-        <span class="stat-val" id="stateVal" style="color: #4ade80;">SẴN SÀNG TRIỆU HỒI</span>
+        <span class="stat-val" id="stateVal" style="color: #eab308;">ĐANG NẠP MA LỰC...</span>
       </div>
     </section>
 
-    <!-- Nút Nhấn Giữ Thức Tỉnh (Được nâng cao an toàn) -->
+    <!-- Nút thức tỉnh (mặc định disabled chờ preload) -->
     <div class="actions">
-      <div class="btn-instruction" id="btnHint">⚡ NHẤN GIỮ ĐỂ GIẢI PHÓNG SỨC MẠNH ⚡</div>
-      <button class="btn-arise" id="btnArise"
+      <div class="btn-instruction" id="btnHint">⏳ HỆ THỐNG ĐANG TẢI MA LỰC...</div>
+      <button class="btn-arise" id="btnArise" disabled
               onmousedown="startCharging(event)" 
               onmouseup="stopCharging(event)" 
               onmouseleave="stopCharging(event)"
               ontouchstart="startCharging(event)" 
               ontouchend="stopCharging(event)">
-        ARISE // THỨC TỈNH
+        ĐANG KẾT NỐI...
       </button>
     </div>
 
-    <!-- Vùng chiếu Video full không viền -->
+    <!-- Video preload='auto' -->
     <div class="video-viewport" id="videoViewport">
       <video id="jinwooVideo" playsinline preload="auto">
-        <source src="jinwoo.mp4" type="video/mp4">
+        <source src="./jinwoo.mp4" type="video/mp4">
       </video>
     </div>
 
@@ -374,7 +379,57 @@
 
     let chargeInterval = null;
     let chargeProgress = 0;
+    let isReady = false;
 
+    // --- CƠ CHẾ PRELOAD ASSETS (VIDEO & AUDIO) ---
+    let audioLoaded = false;
+    let videoLoaded = false;
+
+    function checkAssetsReady() {
+      if (isReady) return;
+
+      // Kiểm tra cả 2 media đã đủ buffer để phát mượt mà
+      if (audioLoaded && videoLoaded) {
+        isReady = true;
+        btnArise.disabled = false;
+        btnArise.innerText = 'ARISE // THỨC TỈNH';
+        btnHint.innerText = '⚡ NHẤN GIỮ ĐỂ GIẢI PHÓNG SỨC MẠNH ⚡';
+        btnHint.style.color = '#38bdf8';
+        stateVal.innerText = 'SẴN SÀNG TRIỆU HỒI';
+        stateVal.style.color = '#4ade80';
+      }
+    }
+
+    // Lắng nghe sự kiện canplaythrough
+    chargeBgm.addEventListener('canplaythrough', () => {
+      audioLoaded = true;
+      checkAssetsReady();
+    });
+
+    jinwooVideo.addEventListener('canplaythrough', () => {
+      videoLoaded = true;
+      checkAssetsReady();
+    });
+
+    // Ép nạp trước dữ liệu
+    chargeBgm.load();
+    jinwooVideo.load();
+
+    // Fallback: Nếu trình duyệt cache sẵn (readyState >= 3) hoặc mạng chậm sau 3.5s
+    setTimeout(() => {
+      if (chargeBgm.readyState >= 3) audioLoaded = true;
+      if (jinwooVideo.readyState >= 3) videoLoaded = true;
+      checkAssetsReady();
+
+      // Mở khóa bắt buộc sau 4 giây phòng ngừa lỗi mạng không kẹt nút
+      if (!isReady) {
+        audioLoaded = true;
+        videoLoaded = true;
+        checkAssetsReady();
+      }
+    }, 3500);
+
+    // --- CANVAS SÉT ---
     function resizeCanvas() {
       canvas.width = screen.clientWidth;
       canvas.height = screen.clientHeight;
@@ -382,7 +437,6 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Vẽ hiệu ứng tia sét
     function drawBolt(x1, y1, x2, y2, color) {
       ctx.strokeStyle = color;
       ctx.lineWidth = 2.2;
@@ -412,10 +466,11 @@
       }
     }
 
-    // 1. Bắt đầu nhấn giữ
+    // --- LOGIC NHẤN GIỮ ---
     function startCharging(e) {
       if (e) e.preventDefault();
-      
+      if (!isReady) return;
+
       chargeBgm.currentTime = 0;
       chargeBgm.play().catch(() => {});
 
@@ -440,7 +495,6 @@
       }, 50);
     }
 
-    // 2. Nhả tay sớm
     function stopCharging(e) {
       if (e) e.preventDefault();
       clearInterval(chargeInterval);
@@ -460,7 +514,6 @@
       }
     }
 
-    // 3. Đạt 100% -> Phát video
     function launchCinematicVideo() {
       clearInterval(chargeInterval);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -473,6 +526,7 @@
       videoViewport.classList.add('playing');
       jinwooVideo.currentTime = 0;
       jinwooVideo.muted = false;
+      
       jinwooVideo.play().catch(() => {
         jinwooVideo.muted = true;
         jinwooVideo.play();
@@ -481,7 +535,6 @@
       if (navigator.vibrate) navigator.vibrate([150, 60, 300]);
     }
 
-    // 4. Hết video -> Trở về bảng trạng thái
     jinwooVideo.onended = () => {
       videoViewport.classList.remove('playing');
       statusCard.classList.remove('glitched');
