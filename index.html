@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Bảng Trạng Thái - Thợ Săn Nhi-chan</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -43,11 +44,164 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 24px 20px calc(40px + env(safe-area-inset-bottom, 0px)) 20px;
+      padding: 24px 20px 50px 20px;
       background: radial-gradient(circle at 50% 15%, rgba(0, 240, 255, 0.08) 0%, rgba(4, 6, 12, 0.98) 100%);
       overflow: hidden;
     }
 
+    /* BẢNG HỆ THỐNG SOLO LEVELING (SYSTEM POPUP) */
+    .system-modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 1;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .system-modal-backdrop.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.05);
+    }
+
+    .system-window {
+      width: 100%;
+      background: rgba(6, 18, 38, 0.92);
+      border: 1.5px solid var(--neon-blue);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4), inset 0 0 15px rgba(0, 240, 255, 0.2);
+      border-radius: 8px;
+      padding: 22px 18px;
+      position: relative;
+      animation: systemSlideIn 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    /* Hiệu ứng tia quét hologram */
+    .system-window::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 100%;
+      background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.08), transparent);
+      animation: scanline 3s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    @keyframes systemSlideIn {
+      from { transform: translateY(-40px) scale(0.9); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .system-window-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+
+    .system-icon {
+      color: var(--neon-blue);
+      font-size: 18px;
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .system-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      color: var(--neon-blue);
+      letter-spacing: 2px;
+      font-weight: 800;
+    }
+
+    .system-body {
+      color: #e0f2fe;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .system-body strong {
+      color: #fff;
+      font-size: 16px;
+      display: block;
+      margin: 8px 0;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+    }
+
+    .system-choices {
+      display: flex;
+      gap: 12px;
+    }
+
+    .sys-btn {
+      flex: 1;
+      height: 46px;
+      border: 1px solid var(--neon-blue);
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--neon-blue);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sys-btn:hover, .sys-btn:active {
+      background: var(--neon-blue);
+      color: #000;
+      box-shadow: 0 0 15px var(--neon-blue);
+    }
+
+    .sys-btn.btn-no {
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .sys-btn.btn-no:active {
+      background: rgba(255, 42, 95, 0.2);
+      border-color: #ff2a5f;
+      color: #ff2a5f;
+    }
+
+    /* Warning message nếu bấm từ chối */
+    .reject-warning {
+      color: #ff2a5f;
+      font-size: 12px;
+      text-align: center;
+      margin-top: 10px;
+      letter-spacing: 1px;
+      display: none;
+      font-family: 'Orbitron', monospace;
+    }
+
+    /* Canvas hiệu ứng sét */
     #fxCanvas {
       position: absolute;
       top: 0;
@@ -226,10 +380,7 @@
       margin-bottom: 10px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      transition: color 0.3s ease;
     }
-
-    /* Nút Thức Tỉnh & Trạng thái Loading */
     .btn-arise {
       width: 100%;
       height: 58px;
@@ -248,16 +399,6 @@
       align-items: center;
       justify-content: center;
       transition: all 0.3s ease;
-    }
-
-    /* Khi đang load dữ liệu (chưa sẵn sàng) */
-    .btn-arise:disabled {
-      background: #090d16;
-      border-color: rgba(255, 255, 255, 0.1);
-      color: #475569;
-      box-shadow: none;
-      cursor: not-allowed;
-      opacity: 0.7;
     }
 
     /* Lớp video full màn hình không viền */
@@ -291,7 +432,7 @@
 </head>
 <body>
 
-  <!-- Audio preload='auto' -->
+  <!-- Audio nhạc nền (đường dẫn tương đối chuẩn ./charge.mp3) -->
   <audio id="chargeBgm" preload="auto">
     <source src="./charge.MP3" type="audio/mpeg">
   </audio>
@@ -299,6 +440,29 @@
   <div class="mobile-screen" id="mainScreen">
     <canvas id="fxCanvas"></canvas>
 
+    <!-- BẢNG THÔNG BÁO HỆ THỐNG / LỰA CHỌN SOLO LEVELING -->
+    <div class="system-modal-backdrop" id="systemPrompt">
+      <div class="system-window">
+        <div class="system-window-header">
+          <span class="system-icon">◈</span>
+          <span class="system-title">NHIỆM VỤ CHUYỂN SINH CẤP TỐI CAO</span>
+        </div>
+        <div class="system-body">
+          Người chơi [<strong>Thợ Săn Nhi-chan</strong>] đã đạt điều kiện đánh thức sức mạnh cổ đại.
+          <strong>[BẠN CÓ CHẤP NHẬN TRỞ THÀNH CHÚA TỂ BÓNG TỐI?]</strong>
+          Thời gian quyết định không còn nhiều.
+        </div>
+        <div class="system-choices">
+          <button class="sys-btn" onclick="acceptSystemQuest()">[ CÓ ]</button>
+          <button class="sys-btn btn-no" onclick="rejectSystemQuest()">[ KHÔNG ]</button>
+        </div>
+        <div class="reject-warning" id="rejectMsg">
+          ⚠ CẢNH BÁO: BẠN KHÔNG THỂ TỪ CHỐI ĐỊNH MỆNH!
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay gồng lực -->
     <div class="charging-overlay" id="chargingOverlay">
       <div class="charging-text">
         ⚠ CẢNH BÁO: MA LỰC BÙNG NỔ ⚠<br>
@@ -309,11 +473,13 @@
       </div>
     </div>
 
+    <!-- Header -->
     <header class="header">
       <div class="sys-badge">◈ SHADOW MONARCH SYSTEM ◈</div>
       <p style="font-size: 12px; color: #64748b; margin-top: 2px;">ĐỒNG BỘ VỚI QUÂN VƯƠNG HẮC ÁM</p>
     </header>
 
+    <!-- Status Card Nhi-chan -->
     <section class="status-card" id="statusCard">
       <div class="avatar-box">
         <div class="avatar-glow">👑</div>
@@ -337,24 +503,24 @@
       </div>
       <div class="stat-row">
         <span>Trạng thái</span>
-        <span class="stat-val" id="stateVal" style="color: #eab308;">ĐANG NẠP MA LỰC...</span>
+        <span class="stat-val" id="stateVal" style="color: #4ade80;">SẴN SÀNG TRIỆU HỒI</span>
       </div>
     </section>
 
-    <!-- Nút thức tỉnh (mặc định disabled chờ preload) -->
+    <!-- Cụm nút Thức Tỉnh -->
     <div class="actions">
-      <div class="btn-instruction" id="btnHint">⏳ HỆ THỐNG ĐANG TẢI MA LỰC...</div>
-      <button class="btn-arise" id="btnArise" disabled
+      <div class="btn-instruction" id="btnHint">⚡ NHẤN GIỮ ĐỂ GIẢI PHÓNG SỨC MẠNH ⚡</div>
+      <button class="btn-arise" id="btnArise"
               onmousedown="startCharging(event)" 
               onmouseup="stopCharging(event)" 
               onmouseleave="stopCharging(event)"
               ontouchstart="startCharging(event)" 
               ontouchend="stopCharging(event)">
-        ĐANG KẾT NỐI...
+        ARISE // THỨC TỈNH
       </button>
     </div>
 
-    <!-- Video preload='auto' -->
+    <!-- Video tràn viền -->
     <div class="video-viewport" id="videoViewport">
       <video id="jinwooVideo" playsinline preload="auto">
         <source src="./jinwoo.mp4" type="video/mp4">
@@ -376,60 +542,53 @@
     const jinwooVideo = document.getElementById('jinwooVideo');
     const chargeBgm = document.getElementById('chargeBgm');
     const stateVal = document.getElementById('stateVal');
+    const systemPrompt = document.getElementById('systemPrompt');
+    const rejectMsg = document.getElementById('rejectMsg');
 
     let chargeInterval = null;
     let chargeProgress = 0;
-    let isReady = false;
 
-    // --- CƠ CHẾ PRELOAD ASSETS (VIDEO & AUDIO) ---
-    let audioLoaded = false;
-    let videoLoaded = false;
-
-    function checkAssetsReady() {
-      if (isReady) return;
-
-      // Kiểm tra cả 2 media đã đủ buffer để phát mượt mà
-      if (audioLoaded && videoLoaded) {
-        isReady = true;
-        btnArise.disabled = false;
-        btnArise.innerText = 'ARISE // THỨC TỈNH';
-        btnHint.innerText = '⚡ NHẤN GIỮ ĐỂ GIẢI PHÓNG SỨC MẠNH ⚡';
-        btnHint.style.color = '#38bdf8';
-        stateVal.innerText = 'SẴN SÀNG TRIỆU HỒI';
-        stateVal.style.color = '#4ade80';
-      }
+    // --- ÂM THANH SYSTEM BEEP ---
+    function playSystemSound(freq = 880, duration = 0.1) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const actx = new AudioContext();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, actx.currentTime);
+        gain.gain.setValueAtTime(0.2, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + duration);
+      } catch (e) {}
     }
 
-    // Lắng nghe sự kiện canplaythrough
-    chargeBgm.addEventListener('canplaythrough', () => {
-      audioLoaded = true;
-      checkAssetsReady();
-    });
+    // --- TƯƠNG TÁC BẢNG HỆ THỐNG ---
+    function acceptSystemQuest() {
+      playSystemSound(1200, 0.25); // tiếng tít xác nhận
+      if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+      
+      // Đóng bảng hệ thống mượt mà
+      systemPrompt.classList.add('hidden');
+    }
 
-    jinwooVideo.addEventListener('canplaythrough', () => {
-      videoLoaded = true;
-      checkAssetsReady();
-    });
+    function rejectSystemQuest() {
+      playSystemSound(300, 0.3); // tiếng buzz lỗi
+      if (navigator.vibrate) navigator.vibrate(200);
+      rejectMsg.style.display = 'block';
 
-    // Ép nạp trước dữ liệu
-    chargeBgm.load();
-    jinwooVideo.load();
+      // Rung nhẹ cửa sổ hệ thống
+      const win = document.querySelector('.system-window');
+      win.style.borderColor = '#ff2a5f';
+      setTimeout(() => {
+        win.style.borderColor = 'var(--neon-blue)';
+      }, 500);
+    }
 
-    // Fallback: Nếu trình duyệt cache sẵn (readyState >= 3) hoặc mạng chậm sau 3.5s
-    setTimeout(() => {
-      if (chargeBgm.readyState >= 3) audioLoaded = true;
-      if (jinwooVideo.readyState >= 3) videoLoaded = true;
-      checkAssetsReady();
-
-      // Mở khóa bắt buộc sau 4 giây phòng ngừa lỗi mạng không kẹt nút
-      if (!isReady) {
-        audioLoaded = true;
-        videoLoaded = true;
-        checkAssetsReady();
-      }
-    }, 3500);
-
-    // --- CANVAS SÉT ---
+    // --- CANVAS SÉT & GIAO DIỆN ---
     function resizeCanvas() {
       canvas.width = screen.clientWidth;
       canvas.height = screen.clientHeight;
@@ -466,11 +625,10 @@
       }
     }
 
-    // --- LOGIC NHẤN GIỮ ---
+    // --- NHẤN GIỮ ĐỂ THỨC TỈNH ---
     function startCharging(e) {
       if (e) e.preventDefault();
-      if (!isReady) return;
-
+      
       chargeBgm.currentTime = 0;
       chargeBgm.play().catch(() => {});
 
@@ -526,7 +684,6 @@
       videoViewport.classList.add('playing');
       jinwooVideo.currentTime = 0;
       jinwooVideo.muted = false;
-      
       jinwooVideo.play().catch(() => {
         jinwooVideo.muted = true;
         jinwooVideo.play();
